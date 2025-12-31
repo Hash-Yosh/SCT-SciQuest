@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Leaderboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: url("trees.png") center/cover no-repeat;
+  font-family: Arial, sans-serif;
+  color: white;
+}
+
+.container {
+  max-width: 420px;
+  margin: 80px auto;
+  background: rgba(0,0,0,0.75);
+  padding: 25px;
+  border-radius: 14px;
+  text-align: center;
+}
+
+input, button {
+  width: 90%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  background: gold;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  padding: 6px 0;
+  border-bottom: 1px solid #555;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>🏆 Leaderboard</h2>
+
+  <input id="name" placeholder="Your name">
+  <button onclick="submitScore()">Submit Score</button>
+
+  <h3>Top Players</h3>
+  <ul id="list"></ul>
+
+  <button onclick="goBack()">⬅ Back</button>
+</div>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbykSaLnj6ilD-77IYXzTqpu0jsKh7T7kHA07Lt6iOkXWHhYFL5Wu4yYJ4KaHnIoktE-7Q/exec";
+const score = localStorage.getItem("lastScore") || 0;
+
+function submitScore() {
+  const name = document.getElementById("name").value.trim();
+  if (!name) return alert("Enter your name!");
+
+  fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify({ name, score })
+  }).then(() => {
+    loadScores();
+  });
+}
+
+function loadScores() {
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      data.sort((a,b) => b.score - a.score);
+
+      const list = document.getElementById("list");
+      list.innerHTML = "";
+
+      data.slice(0,10).forEach((p,i) => {
+        let medal = "";
+        if (i === 0) medal = "🥇 ";
+        if (i === 1) medal = "🥈 ";
+        if (i === 2) medal = "🥉 ";
+
+        list.innerHTML += `<li>${medal}${p.name} — ${p.score}</li>`;
+      });
+    });
+}
+
+function goBack() {
+  window.location.href = "game.html";
+}
+
+loadScores();
+</script>
+
+</body>
+</html>

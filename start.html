@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Study Game - Play</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+}
+
+#hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 8px 12px;
+  background: rgba(0,0,0,.6);
+  color: #fff;
+  border-radius: 8px;
+  font-weight: bold;
+}
+
+#summary {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.7);
+}
+
+.card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.card button {
+  margin: 10px;
+  padding: 10px 16px;
+  font-weight: bold;
+  border-radius: 8px;
+  border: none;
+  background: gold;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="gameCanvas"></canvas>
+
+<div id="hud">
+  Score: <span id="score">0</span> |
+  Level: <span id="lvl">1</span>
+</div>
+
+<div id="summary">
+  <div class="card">
+    <h2>Level Complete!</h2>
+    <p id="resultText"></p>
+    <button onclick="goMenu()">Main Menu</button>
+<button onclick="goMap()">Level Map</button>
+<button onclick="goRanks()">View Ranks</button>
+	<button onclick="nextLevel()">Next Level</button>
+  </div>
+</div>
+
+<script>
+// ================= CANVAS =================
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+addEventListener("resize", resize);
+resize();
+
+const summary = document.getElementById("summary");
+const resultText = document.getElementById("resultText");
+
+
+// ================= LEVEL BACKGROUNDS =================
+const levelBackgrounds = {
+  1: "blue.png",
+  2: "sunset.png",
+  3: "moon.png"
+};
+
+function setLevelBackground() {
+  document.body.style.backgroundImage =
+    `url('${levelBackgrounds[selectedLevel]}')`;
+}
+
+// ================= QUESTIONS =================
+const questionBank = {
+  1: [ // Level 1 (Easy)
+    {
+      text: "What is the main organ responsible for gas exchange?",
+      choices: ["Lungs", "Bronchi", "Heart", "Trachea"],
+      correct: 1
+    },
+    {
+      text: "What organ pumps blood?",
+      choices: ["Veins", "Arteries", "Brain", "Heart"],
+      correct: 4
+    },
+    {
+      text: "What are the different forms of a gene called?",
+      choices: ["Phenotype", "Genotype", "Alleles", "Punnett Square"],
+      correct: 3
+    },
+    {
+      text: "What is biodiversity?",
+      choices: [
+        "Variety of living organisms",
+        "A place with invasive species",
+        "Where one species rules the area",
+        "A community full of the same animals"
+      ],
+      correct: 1
+    },
+    {
+      text: "What is the gas needed for photosynthesis?",
+      choices: ["Oxygen", "Carbon Dioxide", "Nitrogen", "Hydrogen"],
+      correct: 2
+    }
+  ],
+
+  2: [ // Level 2 (Medium)
+    {
+      text: "What is the movement of the diaphragm when you inhale?",
+      choices: [
+        "Contracts and moves upward",
+        "Expands and moves upward",
+        "Contracts and moves downward",
+        "Expands and moves downward"
+      ],
+      correct: 3
+    },
+    {
+      text: "Which vessel carries blood away from the heart?",
+      choices: ["Alveoli", "Veins", "Arteries", "Aorta"],
+      correct: 3
+    },
+    {
+      text: "What is the phenotype of Tt when T equals tall?",
+      choices: ["Short", "Tall", "20%", "25%"],
+      correct: 2
+    },
+    {
+      text: "Why is biodiversity important?",
+      choices: [
+        "Makes ecosystems stable and resilient",
+        "Makes ecosystem unique",
+        "It's not",
+        "It gives animals a place to stay"
+      ],
+      correct: 1
+    },
+    {
+      text: "What is the pigment that absorbs sunlight?",
+      choices: ["Chlorophyll", "Acrylic", "Stoma", "Melanin"],
+      correct: 1
+    }
+  ],
+
+  3: [ // Level 3 (Hard)
+    {
+      text: "Why are the alveoli important?",
+      choices: [
+        "Large surface area and thin walls for fast gas exchange",
+        "Large surface area and thick walls for fast gas exchange",
+        "Small surface area and thick walls for fast gas exchange",
+        "Small surface area and thin walls for fast gas exchange"
+      ],
+      correct: 1
+    },
+    {
+      text: "What process in the circulatory system transports oxygen, nutrients, hormones, and removes wastes?",
+      choices: [
+        "Systemic circulation",
+        "Systematic circulation",
+        "Circulation of the circulatory system",
+        "System circulation"
+      ],
+      correct: 1
+    },
+    {
+      text: "When both parents are heterozygous Bb (B = Brown allele, b = Blue allele), what is the probability of their child having blue eyes?",
+      choices: ["0%", "25%", "50%", "100%"],
+      correct: 2
+    },
+    {
+      text: "Which of the following are the best examples of the effects of habitat destruction?",
+      choices: [
+        "Increases chance of extinction and disrupts ecosystem balance",
+        "Reduces animal risk and supports the ecosystem",
+        "Makes way for other species to have a home",
+        "Increases reproduction and creates safe habitats"
+      ],
+      correct: 1
+    },
+    {
+      text: "Why does light intensity affect photosynthesis?",
+      choices: [
+        "No light = better energy",
+        "It doesn't",
+        "It gives plants warmth",
+        "More light = more energy"
+      ],
+      correct: 4
+    }
+  ]
+};
+
+// ================= LEVEL SYSTEM =================
+let selectedLevel = parseInt(localStorage.getItem("selectedLevel")) || 1;
+let unlockedLevel = parseInt(localStorage.getItem("unlockedLevel")) || 1;
+document.getElementById("lvl").textContent = selectedLevel;
+
+// ================= SCORE =================
+let score = 0;
+const scoreEl = document.getElementById("score");
+
+// ================= IMAGES =================
+const playerImg = new Image();
+playerImg.src = (localStorage.getItem("chosenCharacter") || "liam") + ".png";
+const platformImg = new Image();
+platformImg.src = "block.png";
+
+// ================= PLAYER =================
+const player = {
+  x:120, y:100, w:48, h:72,
+  vx:0, vy:0,
+  speed:5,
+  onGround:false,
+  spawnX:120,
+  spawnY:100
+};
+
+const gravity = 0.6;
+
+// ================= INPUT =================
+const keys = {};
+addEventListener("keydown", e => keys[e.code] = true);
+addEventListener("keyup", e => keys[e.code] = false);
+function clearKeys(){ for (let k in keys) keys[k] = false; }
+
+// ================= OBJECTS =================
+let platforms=[], spikes=[], questions=[];
+let finishLine=null;
+let cameraX=0;
+let levelFinished=false;
+let isAsking=false;
+
+// ================= BUILD LEVEL =================
+function buildLevel(){
+  platforms=[]; spikes=[]; questions=[];
+  score=0; scoreEl.textContent=score;
+  levelFinished=false;
+  setLevelBackground();
+
+  const groundY = canvas.height - 96;
+  const levelWidth = 2000;
+
+  platforms.push({x:0,y:groundY,w:levelWidth,h:96});
+
+  for(let i=0;i<10;i++){
+    const px=300+i*200;
+    const py=groundY-160-(i%2)*80;
+    platforms.push({x:px,y:py,w:200,h:32});
+    spikes.push({x:px+80,y:py-32,w:40,h:24});
+  }
+
+  questionBank[selectedLevel].forEach((q,i)=>{
+    questions.push({
+      x:400+i*300,
+      y:groundY-220,
+      w:60,h:60,
+      used:false,
+      data:q
+    });
+  });
+
+  finishLine={x:levelWidth-40,y:groundY-120,w:20,h:120};
+
+  Object.assign(player,{x:player.spawnX,y:player.spawnY,vx:0,vy:0});
+  clearKeys();
+}
+buildLevel();
+
+// ================= GAME LOOP =================
+function loop(){ update(); draw(); requestAnimationFrame(loop); }
+playerImg.onload = loop;
+
+// ================= UPDATE =================
+function update(){
+  if(isAsking || levelFinished) return;
+
+  player.vx = 0;
+  if(keys.ArrowLeft || keys.KeyA) player.vx = -player.speed;
+  if(keys.ArrowRight || keys.KeyD) player.vx = player.speed;
+  if((keys.Space || keys.ArrowUp) && player.onGround){
+    player.vy = -14;
+    player.onGround = false;
+  }
+
+  player.vy += gravity;
+  player.x += player.vx;
+  player.y += player.vy;
+
+  player.onGround = false;
+  platforms.forEach(p=>{
+    if(
+      player.x + player.w > p.x &&
+      player.x < p.x + p.w &&
+      player.y + player.h > p.y &&
+      player.y + player.h < p.y + p.h + 20 &&
+      player.vy >= 0
+    ){
+      player.y = p.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+  });
+
+  // SPIKES = RESTART LEVEL
+  spikes.forEach(s=>{
+    if(
+      player.x < s.x + s.w &&
+      player.x + player.w > s.x &&
+      player.y < s.y + s.h &&
+      player.y + player.h > s.y
+    ){
+      buildLevel();
+    }
+  });
+
+  // QUESTIONS
+  // QUESTIONS
+questions.forEach(q=>{
+  if(
+    !q.used &&
+    player.x < q.x + q.w &&
+    player.x + player.w > q.x &&
+    player.y < q.y + q.h &&
+    player.y + player.h > q.y
+  ){
+    isAsking = true;
+
+    const ans = prompt(
+      q.data.text + "\n\n" +
+      q.data.choices.map((c,i)=>`${i+1}. ${c}`).join("\n")
+    );
+
+    if (parseInt(ans) === q.data.correct) {
+      score++;
+      scoreEl.textContent = score;
+    } else {
+      const correctIndex = q.data.correct - 1;
+      const correctAnswer = q.data.choices[correctIndex];
+
+      alert(
+        "❌ Wrong answer!\n\n" +
+        "✅ Correct answer:\n" +
+        correctAnswer
+      );
+    }
+
+    q.used = true;        // ✅ IMPORTANT
+    clearKeys();          // ✅ prevent stuck movement
+    isAsking = false;     // ✅ resume game
+  }
+});
+
+ // FINISH LINE
+if (player.x + player.w > finishLine.x) {
+  levelFinished = true;
+
+  if (unlockedLevel < selectedLevel + 1) {
+    unlockedLevel = selectedLevel + 1;
+    localStorage.setItem("unlockedLevel", unlockedLevel);
+  }
+
+  // ✅ SAVE SCORE FOR RANKS
+  localStorage.setItem("lastScore", score);
+
+  summary.style.display = "flex";
+  resultText.textContent = `Score: ${score}/5`;
+
+  player.vx = 0;
+  player.vy = 0;
+}
+
+  // CAMERA
+  cameraX = Math.max(0, player.x - canvas.width / 2);
+}
+
+// ================= DRAW =================
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.translate(-cameraX,0);
+
+  platforms.forEach(p=>{
+    for(let x=p.x;x<p.x+p.w;x+=32)
+      for(let y=p.y;y<p.y+p.h;y+=32)
+        ctx.drawImage(platformImg,x,y,32,32);
+  });
+
+  ctx.fillStyle="red";
+  spikes.forEach(s=>{
+    ctx.beginPath();
+    ctx.moveTo(s.x,s.y+s.h);
+    ctx.lineTo(s.x+s.w/2,s.y);
+    ctx.lineTo(s.x+s.w,s.y+s.h);
+    ctx.fill();
+  });
+
+  ctx.fillStyle="yellow";
+  questions.forEach(q=>{
+    if(!q.used){
+      ctx.fillRect(q.x,q.y,q.w,q.h);
+      ctx.strokeRect(q.x,q.y,q.w,q.h);
+      ctx.fillStyle="#000";
+      ctx.font="bold 32px Arial";
+      ctx.textAlign="center";
+      ctx.textBaseline="middle";
+      ctx.fillText("?",q.x+30,q.y+32);
+      ctx.fillStyle="yellow";
+    }
+  });
+
+  ctx.fillStyle="#fff";
+  ctx.fillRect(finishLine.x,finishLine.y,finishLine.w,finishLine.h);
+  ctx.drawImage(playerImg,player.x,player.y,player.w,player.h);
+
+  ctx.restore();
+}
+
+// ================= UI =================
+function nextLevel(){
+  if(selectedLevel<unlockedLevel && selectedLevel<3){
+    selectedLevel++;
+    document.getElementById("lvl").textContent=selectedLevel;
+    summary.style.display="none";
+    buildLevel();
+  }
+}
+
+function goMenu(){
+  window.location.href = "game.html";
+}
+
+function goMap(){
+  window.location.href = "level map.html";
+}
+
+function goRanks(){
+  window.location.href = "rank.html";
+}
+
+</script>
+</body>
+</html>

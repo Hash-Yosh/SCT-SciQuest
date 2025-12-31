@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCT: Skill Check Training</title>
+<style>
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  background: url("siena.png") no-repeat center center fixed;
+  background-size: cover;
+  font-family: 'Press Start 2P', cursive;
+  color: white;
+}
+
+/* LOGO */
+#logo {
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: contain;
+  border: 4px solid #FFD700;
+  background: #fff6db;
+  padding: 10px;
+  box-shadow: 0 4px 25px rgba(255, 215, 0, 0.6);
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateX(-50%) translateY(0); }
+  50% { transform: translateX(-50%) translateY(-10px); }
+}
+
+/* BUTTON STYLING */
+.menu-btn {
+  position: absolute;
+  background: rgba(0, 0, 0, 0.75);
+  color: #FFD700;
+  border: 3px solid #FFD700;
+  border-radius: 12px;
+  font-size: 16px;
+  padding: 18px 30px;
+  cursor: pointer;
+  transition: 0.2s;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.menu-btn:hover {
+  background: #FFD700;
+  color: #000;
+  transform: scale(1.1);
+}
+
+/* BUTTON POSITIONS */
+#startBtn {
+  top: 55%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#charBtn {
+  bottom: 70px;
+  left: 60px;
+}
+
+#levelBtn {
+  bottom: 70px;
+  right: 60px;
+}
+
+#rankBtn {
+  bottom: 70px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#howBtn {
+  top: 20px;
+  right: 30px;
+  background: rgba(255, 215, 0, 0.8);
+  color: #000;
+  border-color: #fff;
+  font-size: 14px;
+  padding: 12px 25px;
+}
+
+/* HOW TO PLAY OVERLAY */
+#howToPlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  text-align: center;
+  padding-top: 120px;
+  font-family: Arial, sans-serif;
+}
+
+#howToPlay h2 {
+  font-family: 'Press Start 2P', cursive;
+  color: #FFD700;
+}
+
+#howToPlay p {
+  max-width: 600px;
+  margin: 20px auto;
+  line-height: 1.8;
+  font-size: 15px;
+}
+
+#closeHow {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 8px;
+  background: #FFD700;
+  color: #000;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 20px;
+}
+#closeHow:hover { background: #ffec80; }
+
+</style>
+</head>
+<body>
+
+<!-- LOGO -->
+<img id="logo" src="2026.png" alt="SCT Logo">
+
+<!-- MENU BUTTONS -->
+<button class="menu-btn" id="startBtn">Start Game</button>
+<button class="menu-btn" id="charBtn">Characters</button>
+<button class="menu-btn" id="levelBtn">Levels</button>
+<button class="menu-btn" id="rankBtn">Ranks</button>
+<button class="menu-btn" id="howBtn">How to Play</button>
+
+<!-- HOW TO PLAY OVERLAY -->
+<div id="howToPlay">
+  <h2>📘 How to Play</h2>
+  <p>
+    ➤ Move with <b>Arrow Keys</b> or <b>A / D</b>.<br>
+    ➤ Jump with <b>Space</b> or <b>W / ↑</b>.<br>
+    ➤ Avoid obstacles, answer questions, and reach the goal!<br>
+    ➤ Earn points and unlock new levels.
+	➤ More points makes you climb the ranks!.
+  </p>
+  <button id="closeHow">Back to Menu</button>
+</div>
+
+<div id="endScreen" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.75);
+    color:#FFD700;
+    font-family:'Press Start 2P', cursive;
+    text-align:center;
+    padding-top:120px;
+    z-index:9999;
+">
+
+    <h1>🏁 LEVEL COMPLETE!</h1>
+
+    <p id="pointsText">Points: 0</p>
+    <p id="timeText">Time: 0s</p>
+    <p id="scoreText">Score: 0</p>
+
+    <button onclick="continueToNext()"
+    style="
+        padding:15px 35px;
+        background:#4b0010;
+        color:#FFD700;
+        border:3px solid #FFD700;
+        border-radius:10px;
+        cursor:pointer;
+        margin-top:30px;
+    ">Continue</button>
+</div>
+
+<script>
+/* MENU LOGIC */
+const startBtn = document.getElementById('startBtn');
+const charBtn = document.getElementById('charBtn');
+const levelBtn = document.getElementById('levelBtn');
+const rankBtn = document.getElementById('rankBtn');
+const howBtn = document.getElementById('howBtn');
+const howToPlay = document.getElementById('howToPlay');
+const closeHow = document.getElementById('closeHow');
+
+// Navigation
+charBtn.onclick = () => window.location.href = "character page.html";
+levelBtn.onclick = () => window.location.href = "level map.html";
+rankBtn.onclick = () => window.location.href = "rank.html"; // ✅ FIXED
+
+// Start Button
+startBtn.onclick = () => {
+  const chosen = localStorage.getItem("chosenCharacter");
+  if (chosen) {
+    window.location.href = "start.html";
+  } else {
+    alert("Please choose a character first!");
+    window.location.href = "character page.html";
+  }
+};
+
+// How to Play
+howBtn.onclick = () => howToPlay.style.display = "block";
+closeHow.onclick = () => howToPlay.style.display = "none";
+</script>
+
+</body>
+</html>

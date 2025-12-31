@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Level Select</title>
+
+<style>
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Press Start 2P', cursive;
+}
+
+body {
+  background: url("level bg.png") no-repeat center center fixed;
+  background-size: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* CONTAINER */
+#levels {
+  background: rgba(0,0,0,0.6);
+  padding: 35px 45px;
+  border-radius: 18px;
+  text-align: center;
+  color: white;
+}
+
+#levels h1 {
+  margin-bottom: 30px;
+  color: #FFD700;
+}
+
+/* FLOAT ANIMATION */
+@keyframes float {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(-8px); }
+  100% { transform: translateY(0); }
+}
+
+/* LEVEL BUTTON */
+.level-btn {
+  display: block;
+  width: 260px;
+  margin: 16px auto;
+  padding: 16px;
+  font-size: 14px;
+  border-radius: 12px;
+  border: 3px solid #FFD700;
+  background: rgba(0,0,0,0.75);
+  color: #FFD700;
+  cursor: pointer;
+  transition: 0.25s;
+  animation: float 2.5s ease-in-out infinite;
+}
+
+.level-btn:hover {
+  background: #FFD700;
+  color: #000;
+  transform: scale(1.08);
+}
+
+/* LOCKED STATE */
+.level-btn.locked {
+  animation: none;
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  border-color: #888;
+  color: #ccc;
+  background: rgba(0,0,0,0.6);
+}
+
+/* BACK BUTTON */
+#backBtn {
+  margin-top: 28px;
+  background: #4b0010;
+}
+</style>
+</head>
+
+<body>
+
+<div id="levels">
+  <h1>🌿 Select Level</h1>
+
+  <button class="level-btn" id="lvl1">Level 1</button>
+  <button class="level-btn" id="lvl2">Level 2 🔒</button>
+  <button class="level-btn" id="lvl3">Level 3 🔒</button>
+
+  <button class="level-btn" id="backBtn">⬅ Main Menu</button>
+</div>
+
+<script>
+const unlockedLevel = parseInt(localStorage.getItem("unlockedLevel")) || 1;
+
+// LEVEL 1 (always unlocked)
+document.getElementById("lvl1").onclick = () => startLevel(1);
+
+// LEVEL 2
+const lvl2 = document.getElementById("lvl2");
+if (unlockedLevel >= 2) {
+  lvl2.textContent = "Level 2";
+  lvl2.onclick = () => startLevel(2);
+} else {
+  lvl2.classList.add("locked");
+}
+
+// LEVEL 3
+const lvl3 = document.getElementById("lvl3");
+if (unlockedLevel >= 3) {
+  lvl3.textContent = "Level 3";
+  lvl3.onclick = () => startLevel(3);
+} else {
+  lvl3.classList.add("locked");
+}
+
+// BACK TO MENU
+document.getElementById("backBtn").onclick = () => {
+  window.location.href = "game.html";
+};
+
+function startLevel(level) {
+  localStorage.setItem("selectedLevel", level);
+  window.location.href = "start.html";
+}
+</script>
+
+</body>
+</html>

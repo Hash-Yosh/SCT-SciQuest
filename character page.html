@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Character Selection</title>
+
+<style>
+  body {
+    margin: 0;
+    background: #4b0010; /* BURGUNDY */
+    font-family: "Poppins", sans-serif;
+    text-align: center;
+  }
+
+  h1 {
+    margin-top: 40px;
+    color: #FFD700; /* Yellow title */
+    font-family: 'Press Start 2P', cursive;
+    font-size: 22px;
+    text-shadow: 2px 2px #000;
+  }
+
+  /* Character Grid */
+  .character-gallery {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-top: 40px;
+  }
+
+  /* Character Box */
+  .char-option {
+    width: 150px;
+    height: 150px;
+    border-radius: 20px;
+    border: 4px solid #FFD700; /* Yellow Outline */
+    background: rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  .char-option:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px #FFD700;
+  }
+
+  .char-option.selected {
+    border-color: #FFD700;
+    box-shadow: 0 0 25px #FFD700;
+    transform: scale(1.12);
+  }
+
+  /* Fix Character Zooming */
+  .char-option img {
+    width: auto;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  /* Preview Section */
+  #preview img {
+    width: auto;
+    height: 180px;
+    object-fit: contain;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.15);
+    border: 4px solid #FFD700;
+    box-shadow: 0 0 15px #FFD700;
+  }
+
+  #charName {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 16px;
+    margin-top: 10px;
+    color: #FFD700;
+    text-shadow: 2px 2px #000;
+  }
+
+  /* Buttons */
+  .button-container {
+    margin-top: 40px;
+  }
+
+  button {
+    margin: 10px;
+    padding: 12px 30px;
+    background: #4b0010;
+    color: #FFD700;
+    border: 3px solid #FFD700;
+    border-radius: 12px;
+    font-family: 'Press Start 2P', cursive;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+
+  button:hover {
+    background: #FFD700;
+    color: #4b0010;
+    box-shadow: 0 0 15px #FFD700;
+  }
+
+  /* Message Box */
+  #msgBox {
+    margin-top: 25px;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 14px;
+    color: #FFD700;
+    text-shadow: 2px 2px #000;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<h1>Choose Your Character</h1>
+
+<div class="character-gallery" id="characterGallery">
+  <div class="char-option" data-name="jals"><img src="jals.png" alt="Jals"></div>
+  <div class="char-option" data-name="jea"><img src="jea.png" alt="Jea"></div>
+  <div class="char-option" data-name="jia"><img src="jia.png" alt="Jia"></div>
+  <div class="char-option" data-name="keanna"><img src="keanna.png" alt="Keanna"></div>
+  <div class="char-option" data-name="nixie"><img src="nixie.png" alt="Nixie"></div>
+  <div class="char-option" data-name="liam"><img src="liam.png" alt="Liam"></div>
+</div>
+
+<div id="preview" style="display:none;">
+  <img id="previewImg" src="">
+  <div id="charName"></div>
+</div>
+
+<div id="msgBox"></div>
+
+<div class="button-container">
+  <button id="confirmBtn">Confirm Character</button>
+  <button onclick="window.location.href='game.html'">Back to Menu</button>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const charOptions = document.querySelectorAll(".char-option");
+  const preview = document.getElementById("preview");
+  const previewImg = document.getElementById("previewImg");
+  const charName = document.getElementById("charName");
+  const msgBox = document.getElementById("msgBox");
+  let selectedChar = null;
+
+  const showMessage = (msg) => {
+    msgBox.textContent = msg;
+    msgBox.style.display = "block";
+  };
+
+  charOptions.forEach(option => {
+    option.addEventListener("click", () => {
+      charOptions.forEach(o => o.classList.remove("selected"));
+      option.classList.add("selected");
+
+      selectedChar = option.dataset.name;
+
+      preview.style.display = "block";
+      previewImg.src = `${selectedChar}.png`;
+      charName.textContent = selectedChar.charAt(0).toUpperCase() + selectedChar.slice(1);
+    });
+  });
+
+  document.getElementById("confirmBtn").addEventListener("click", () => {
+    if (selectedChar) {
+      localStorage.setItem("chosenCharacter", selectedChar);
+      showMessage("Character Selected!");
+    } else {
+      showMessage("Please select a character!");
+    }
+  });
+});
+</script>
+
+</body>
+</html>
